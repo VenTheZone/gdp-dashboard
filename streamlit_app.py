@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import requests
-import tempfile
 import os
 
 # Web scraping function
@@ -31,6 +30,9 @@ def save_data(df, filetype):
 # Display a file directory
 def browse_directory(path):
     files = os.listdir(path)
+    if not files:
+        st.write('No files found in the directory.')
+        return
     selected_file = st.selectbox('Browse Directory', files)
     if selected_file:
         st.write(f'Selected file: {selected_file}')
@@ -53,7 +55,8 @@ if st.button('Scrape'):
             df = pd.DataFrame(data)
             saved_file = save_data(df, filetype)
             st.success(f'Data saved to {saved_file}.')
-            st.download_button(label='Download', data=open(saved_file, 'rb'), file_name=f'data.{filetype}', mime=f'text/{filetype}')
+            with open(saved_file, 'rb') as f:
+                st.download_button(label='Download', data=f, file_name=f'data.{filetype}', mime=f'text/{filetype}')
         else:
             st.error('No data found or failed to scrape.')
     else:
