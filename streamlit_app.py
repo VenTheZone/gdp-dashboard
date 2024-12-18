@@ -4,15 +4,18 @@ from datetime import datetime
 
 st.set_page_config(page_title="NeoClub - Cyberpunk Chat", layout="wide")
 
+# Custom CSS injection
+def load_css(file_path):
+    with open(file_path, 'r') as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+load_css('style.css')  # Ensure the file is in the same directory as this script
+
 # Initialize session state
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 if 'username' not in st.session_state:
     st.session_state.username = ''
-
-# Custom CSS injection
-with open('style.css') as f:
-    st.markdown(f'{f.read()}', unsafe_allow_html=True)
 
 def main():
     st.title("NeoClub")
@@ -34,14 +37,12 @@ def main():
         chat_container = st.container()
         with chat_container:
             for msg in st.session_state.messages:
-                with st.container():
-                    st.markdown(f"""
-                    
-                        {msg['username']}
-                        {msg['timestamp']}
-                        {msg['content']}
-                    
-                    """, unsafe_allow_html=True)
+                st.markdown(f"""
+                <div style="border-left: 3px solid {msg['color']}; padding-left: 10px; margin-bottom: 10px;">
+                    <strong>{msg['username']}:</strong> {msg['content']}<br>
+                    <small style="color: gray;">{msg['timestamp']}</small>
+                </div>
+                """, unsafe_allow_html=True)
 
         # Input area
         with st.form("chat_form", clear_on_submit=True):
