@@ -9,9 +9,14 @@ def scrape_data(url):
     try:
         response = requests.get(url)
         response.raise_for_status()  # Raise an error for bad responses
+        # Debugging line - print response content
+        st.write('Response content:', response.text)
         return response.json()
     except requests.RequestException as e:
         st.error(f'Error fetching data: {e}')
+        return None
+    except ValueError as json_error:
+        st.error(f'Error parsing JSON: {json_error}')
         return None
 
 st.title('Web Scraper')
