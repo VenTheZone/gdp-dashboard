@@ -1,0 +1,62 @@
+/* Cyberpunk theme */
+:root {
+    --neon-pink: #ff2e97;
+    --neon-blue: #00f3ff;
+    --neon-yellow: #ffe600;
+    --dark-bg: #0a0a0f;
+    --darker-bg: #050507;
+}
+
+/* Override Streamlit styles */
+.stApp {
+    background-color: var(--dark-bg);
+}
+
+.stTextInput > div > div {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--neon-blue);
+    color: white;
+}
+
+.stButton > button {
+    background: linear-gradient(45deg, var(--neon-pink), var(--neon-blue));
+    color: white;
+    border: none;
+}
+
+.stButton > button:hover {
+    box-shadow: 0 0 15px var(--neon-pink);
+}
+
+/* Message styles */
+.message {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    border-left: 3px solid var(--neon-pink);
+    margin-bottom: 0.5rem;
+}
+
+.username {
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+.timestamp {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--darker-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--neon-pink);
+    border-radius: 4px;
+}
