@@ -4,6 +4,7 @@ import requests
 import os
 
 # Web scraping function
+
 def scrape_data(url):
     try:
         response = requests.get(url)
@@ -17,6 +18,7 @@ def scrape_data(url):
         return None
 
 # Create a directory based on file type
+
 def save_data(df, filetype):
     folder_name = f'scraped_data/{filetype}'
     os.makedirs(folder_name, exist_ok=True)  # Create directories if they don't exist
@@ -28,6 +30,7 @@ def save_data(df, filetype):
     return filename
 
 # Display a file directory
+
 def browse_directory(path):
     files = os.listdir(path)
     if not files:
@@ -44,19 +47,23 @@ def browse_directory(path):
             df = pd.read_json(file_path)
             st.dataframe(df)
 
-st.title('Web Scraper')
+st.title('Web Scraper with Enhanced Error Handling')
 
 url = st.text_input('Enter URL to scrape:')
 filetype = st.selectbox('Select file type', ['csv', 'json'])  # File type selection
+
 if st.button('Scrape'):
     if url:
         data = scrape_data(url)
-        if data is not None:
-            df = pd.DataFrame(data)
-            saved_file = save_data(df, filetype)
-            st.success(f'Data saved to {saved_file}.')
-            with open(saved_file, 'rb') as f:
-                st.download_button(label='Download', data=f, file_name=f'data.{filetype}', mime=f'text/{filetype}')
+        if data:
+            try:
+                df = pd.DataFrame(data)
+                saved_file = save_data(df, filetype)
+                st.success(f'Data saved to {saved_file}.')
+                with open(saved_file, 'rb') as f:
+                    st.download_button(label='Download', data=f, file_name=f'data.{filetype}', mime=f'text/{filetype}')
+            except Exception as e:
+                st.error(f'Failed to create dataframe: {e}')
         else:
             st.error('No data found or failed to scrape.')
     else:
