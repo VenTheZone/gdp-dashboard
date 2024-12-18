@@ -9,7 +9,6 @@ def scrape_data(url):
     try:
         response = requests.get(url)
         response.raise_for_status()  # Raise an error for bad responses
-        st.write('Response content:', response.text)
         return response.json()
     except requests.RequestException as e:
         st.error(f'Error fetching data: {e}')
@@ -29,19 +28,19 @@ def save_data(df, filetype):
         df.to_json(filename, orient='records')
     return filename
 
-# Function to display uploaded file content
-def display_uploaded_file(uploaded_file):
-    file_extension = os.path.splitext(uploaded_file.name)[1]  # Get the file extension
-    if file_extension == '.csv':
-        df = pd.read_csv(uploaded_file)
-        st.write('Content of the CSV file:')
-        st.dataframe(df)
-    elif file_extension == '.json':
-        df = pd.read_json(uploaded_file)
-        st.write('Content of the JSON file:')
-        st.dataframe(df)
-    else:
-        st.error('Unsupported file type! Please upload a CSV or JSON file.')
+# Display a file directory
+def browse_directory(path):
+    files = os.listdir(path)
+    selected_file = st.selectbox('Browse Directory', files)
+    if selected_file:
+        st.write(f'Selected file: {selected_file}')
+        file_path = os.path.join(path, selected_file)
+        if os.path.splitext(selected_file)[1] == '.csv':
+            df = pd.read_csv(file_path)
+            st.dataframe(df)
+        elif os.path.splitext(selected_file)[1] == '.json':
+            df = pd.read_json(file_path)
+            st.dataframe(df)
 
 st.title('Web Scraper')
 
@@ -52,19 +51,14 @@ if st.button('Scrape'):
         data = scrape_data(url)
         if data is not None:
             df = pd.DataFrame(data)
-            st.write(df)
-
-            # Save data based on file type
             saved_file = save_data(df, filetype)
-            st.success(f'Data saved to {saved_file}. Click below to download:')
+            st.success(f'Data saved to {saved_file}.')
             st.download_button(label='Download', data=open(saved_file, 'rb'), file_name=f'data.{filetype}', mime=f'text/{filetype}')
-            st.code(f'File saved at: {saved_file}')
         else:
             st.error('No data found or failed to scrape.')
     else:
         st.error('Please enter a valid URL.')
 
-# File uploader functionality
-uploaded_file = st.file_uploader('Upload a CSV or JSON file:', type=['csv', 'json'])
-if uploaded_file is not None:
-    display_uploaded_file(uploaded_file)
+# Directory browsing feature
+if st.button('Browse Directory'):
+    browse_directory('scraped_data/')
