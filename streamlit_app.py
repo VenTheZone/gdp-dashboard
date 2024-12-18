@@ -1,74 +1,61 @@
 import streamlit as st
-import pandas as pd
-import requests
-import os
+import time
+from datetime import datetime
 
-# Web scraping function
+st.set_page_config(page_title="NeoClub - Cyberpunk Chat", layout="wide")
 
-def scrape_data(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an error for bad responses
-        return response.json()
-    except requests.RequestException as e:
-        st.error(f'Error fetching data: {e}')
-        return None
-    except ValueError as json_error:
-        st.error(f'Error parsing JSON: {json_error}')
-        return None
+# Initialize session state
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
+if 'username' not in st.session_state:
+    st.session_state.username = ''
 
-# Create a directory based on file type
+# Custom CSS injection
+with open('style.css') as f:
+    st.markdown(f'{f.read()}', unsafe_allow_html=True)
 
-def save_data(df, filetype):
-    folder_name = f'scraped_data/{filetype}'
-    os.makedirs(folder_name, exist_ok=True)  # Create directories if they don't exist
-    filename = f'{folder_name}/data.{filetype}'
-    if filetype == 'csv':
-        df.to_csv(filename, index=False)
-    elif filetype == 'json':
-        df.to_json(filename, orient='records')
-    return filename
+def main():
+    st.title("NeoClub")
 
-# Display a file directory
+    # Login section
+    if not st.session_state.username:
+        with st.form("login_form"):
+            username = st.text_input("Enter your handle, samurai...", max_chars=20)
+            if st.form_submit_button("Enter Night City"):
+                if username.strip():
+                    st.session_state.username = username
+                    st.experimental_rerun()
 
-def browse_directory(path):
-    files = os.listdir(path)
-    if not files:
-        st.write('No files found in the directory.')
-        return
-    selected_file = st.selectbox('Browse Directory', files)
-    if selected_file:
-        st.write(f'Selected file: {selected_file}')
-        file_path = os.path.join(path, selected_file)
-        if os.path.splitext(selected_file)[1] == '.csv':
-            df = pd.read_csv(file_path)
-            st.dataframe(df)
-        elif os.path.splitext(selected_file)[1] == '.json':
-            df = pd.read_json(file_path)
-            st.dataframe(df)
-
-st.title('Web Scraper with Enhanced Error Handling')
-
-url = st.text_input('Enter URL to scrape:')
-filetype = st.selectbox('Select file type', ['csv', 'json'])  # File type selection
-
-if st.button('Scrape'):
-    if url:
-        data = scrape_data(url)
-        if data:
-            try:
-                df = pd.DataFrame(data)
-                saved_file = save_data(df, filetype)
-                st.success(f'Data saved to {saved_file}.')
-                with open(saved_file, 'rb') as f:
-                    st.download_button(label='Download', data=f, file_name=f'data.{filetype}', mime=f'text/{filetype}')
-            except Exception as e:
-                st.error(f'Failed to create dataframe: {e}')
-        else:
-            st.error('No data found or failed to scrape.')
     else:
-        st.error('Please enter a valid URL.')
+        # Chat interface
+        st.markdown("### Welcome to Night City, " + st.session_state.username)
+        
+        # Messages area
+        chat_container = st.container()
+        with chat_container:
+            for msg in st.session_state.messages:
+                with st.container():
+                    st.markdown(f"""
+                    
+                        {msg['username']}
+                        {msg['timestamp']}
+                        {msg['content']}
+                    
+                    """, unsafe_allow_html=True)
 
-# Directory browsing feature
-if st.button('Browse Directory'):
-    browse_directory('scraped_data/')
+        # Input area
+        with st.form("chat_form", clear_on_submit=True):
+            message = st.text_area("Message", height=100)
+            if st.form_submit_button("Send"):
+                if message.strip():
+                    new_message = {
+                        'username': st.session_state.username,
+                        'content': message,
+                        'color': '#ff2e97',
+                        'timestamp': datetime.now().strftime('%H:%M')
+                    }
+                    st.session_state.messages.append(new_message)
+                    st.experimental_rerun()
+
+if __name__ == "__main__":
+    main()
